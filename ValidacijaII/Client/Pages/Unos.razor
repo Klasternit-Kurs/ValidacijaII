@@ -1,0 +1,48 @@
+﻿@page "/unos"
+@using FluentValidation 
+@using Blazored.FluentValidation
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NM
+<h3>Unos</h3>
+
+<p>@NekaOsoba.Ime -- @NekaOsoba.Prezime</p>
+<EditForm Model="@NekaOsoba" OnInvalidSubmit="Neee" OnValidSubmit="Daaa">
+	<FluentValidationValidator />
+	<InputText @bind-Value="NekaOsoba.Ime" />
+	<ValidationMessage For="() => NekaOsoba.Ime" />
+	<InputText @bind-Value="NekaOsoba.Prezime" />
+	<ValidationMessage For="() => NekaOsoba.Prezime" />
+	<button type="submit" class="btn-block">Sub</button>
+	<ValidationSummary />
+</EditForm>
+
+
+@code 
+{
+	public ValidacijaII.Shared.Osoba NekaOsoba = new ValidacijaII.Shared.Osoba();
+
+	public HubConnection HC;
+
+	protected override async Task OnInitializedAsync()
+	{
+		HC = new HubConnectionBuilder().WithUrl(NM.ToAbsoluteUri("blabla")).Build();
+		HC.On<ValidacijaII.Shared.Osoba>("Test", (o) =>
+					{
+						NekaOsoba = o;
+						StateHasChanged();
+					});
+
+
+		await HC.StartAsync();
+	}
+
+	public void Neee()
+	{
+		Console.WriteLine("Los unos");
+	}
+	public void Daaa()
+	{
+		HC.SendAsync("ZaOsobu", NekaOsoba);
+	}
+
+}
